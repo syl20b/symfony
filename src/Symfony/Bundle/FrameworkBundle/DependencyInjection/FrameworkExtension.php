@@ -1837,6 +1837,7 @@ class FrameworkExtension extends Extension
 
         if (!$config['stateless_token_ids']) {
             $container->removeDefinition('security.csrf.same_origin_token_manager');
+            $container->removeDefinition('security.csrf.listener.clear_same_origin_token');
 
             return;
         }
@@ -1846,12 +1847,16 @@ class FrameworkExtension extends Extension
             ->replaceArgument(4, $config['check_header'])
             ->replaceArgument(5, $config['cookie_name']);
 
+        $container->getDefinition('security.csrf.listener.clear_same_origin_token')
+            ->replaceArgument(0, $config['cookie_name']);
+
         if (!$this->isInitializedConfigEnabled('session')) {
             $container->setAlias('security.csrf.token_manager', 'security.csrf.same_origin_token_manager');
             $container->getDefinition('security.csrf.same_origin_token_manager')
                 ->setDecoratedService(null)
                 ->replaceArgument(2, null);
         }
+
     }
 
     private function registerSerializerConfiguration(array $config, ContainerBuilder $container, PhpFileLoader $loader): void
